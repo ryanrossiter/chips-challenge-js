@@ -1,0 +1,31 @@
+{
+  "name": "chips-challenge-js",
+  "version": "1.0.0",
+  "description": "A (WIP) HTML5/JS clone of the 1989 game Chip's Challenge.",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server",
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryanrossiter/chips-challenge-js.git"
+  },
+  "author": "Ryan Rossiter",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ryanrossiter/chips-challenge-js/issues"
+  },
+  "homepage": "https://github.com/ryanrossiter/chips-challenge-js#readme",
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-root-import": "^6.1.0",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.9"
+  }
+}

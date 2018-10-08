@@ -1,6 +1,5 @@
-TILE_SIZE = 32;
 
-TILES = {
+const TILES = {
 	BLOCK: '1',
 	FLOOR: '_',
 	INFO: '?',
@@ -33,25 +32,25 @@ TILES = {
 };
 
 // The reverse object of TILES
-TILE_ALIASES = {};
-for (key in TILES) {
+const TILE_ALIASES = {};
+for (let key in TILES) {
 	if (TILES.hasOwnProperty(key)) {
 		TILE_ALIASES[TILES[key]] = key;
 	}
 }
 
 // Tiles that the monster can cross over
-MONSTER_TILES = [
+const MONSTER_TILES = [
 	TILES.FLOOR,
 	TILES.INFO
 ];
 
-SOLID_TILES = [
+const SOLID_TILES = [
 	TILES.BLOCK,
 	TILES.CHIP_GATE
 ];
 
-ICE_TILES = [
+const ICE_TILES = [
 	TILES.ICE,
 	TILES.ICE_BUMPER_BOTTOM_RIGHT,
 	TILES.ICE_BUMPER_BOTTOM_LEFT,
@@ -59,16 +58,28 @@ ICE_TILES = [
 	TILES.ICE_BUMPER_TOP_LEFT
 ];
 
-BOOST_TILES = [
+const BOOST_TILES = [
 	TILES.BOOST_UP,
 	TILES.BOOST_DOWN,
 	TILES.BOOST_LEFT,
 	TILES.BOOST_RIGHT
 ];
 
-LOCK_TILES = [
+const LOCK_TILES = [
 	TILES.LOCK_A,
 	TILES.LOCK_B,
 	TILES.LOCK_C,
 	TILES.LOCK_D
 ];
+
+const Tiles = {
+	TILES,
+	TILE_ALIASES,
+	MONSTER_TILES,
+	SOLID_TILES,
+	ICE_TILES,
+	BOOST_TILES,
+	LOCK_TILES,
+}
+
+export default Tiles;

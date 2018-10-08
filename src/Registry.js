@@ -1,10 +1,12 @@
-var Registry = {
-	LOADED: false,
-	images: {},
-	maps: {},
+class Registry {
+	constructor() {
+		this.loaded = false;
+		this.images = {};
+		this.maps = {};	
+	}
 
-	loadResources: function() {
-		if (this.LOADED === true) {
+	loadResources() {
+		if (this.loaded === true) {
 			console.log("Resources are already loaded.")
 			return;
 		}
@@ -14,25 +16,24 @@ var Registry = {
 			this._registerResource(resources[i]);
 		}
 
-		var scope = this;
-		var interval = setInterval(function() {
-			if (scope._isLoaded) {
-				scope.LOADED = true;
+		var interval = setInterval(() => {
+			if (this._isLoaded()) {
+				this.loaded = true;
 				console.log("Finished loading resources.");
 				clearInterval(interval);
 			}
 		}, 200);
-	},
+	}
 
-	_isLoaded: function() {
-		for (map in maps) {
-			if (maps[map] === false) return false;
+	_isLoaded() {
+		for (let map in this.maps) {
+			if (this.maps[map] === false) return false;
 		}
 
 		return true;
-	},
+	}
 
-	_registerResource: function(element) {
+	_registerResource(element) {
 		var idSplit = element.id.split(":");
 		var type = idSplit[0];
 		var name = idSplit[1];
@@ -44,8 +45,7 @@ var Registry = {
 			this.maps[name] = false;
 			var client = new XMLHttpRequest();
 			client.open('GET',element.href);
-			var scope = this;
-			client.onreadystatechange = function(state) {
+			client.onreadystatechange = (state) => {
 				if (client.readyState == 4) {
 					var map = client.responseText.split('\n');
 					for (var y = 0; y < map.length; y++) {
@@ -56,24 +56,24 @@ var Registry = {
 						}
 					}
 
-					scope.maps[name] = map;
+					this.maps[name] = map;
 					console.log("Registered map: " + name);
 				}
 			}
 			client.send();
 		}
-	},
+	}
 
-	getImage: function(name) {
+	getImage(name) {
 		if (this.images.hasOwnProperty(name)) {
 			return this.images[name];
 		} else {
 			console.warn("No image with name: " + name);
 			return null;
 		}
-	},
+	}
 
-	getMap: function(name) {
+	getMap(name) {
 		if (this.maps.hasOwnProperty(name)) {
 			return this.maps[name];
 		} else {
@@ -82,3 +82,5 @@ var Registry = {
 		}
 	}
 };
+
+export default new Registry();
