@@ -2,13 +2,28 @@
 
 <html>
 	<head>
-		<title>Chip's Challenge</title>
-	</head>
-	<body>
+		<title>Chip's Challenge JS</title>
+
 		<style>
+			html {
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				padding: 0;
+				margin: 0;
+				background-color: #111;
+				overflow: hidden;
+			}
+
 			canvas {
-				width: 576px;
-				height: 576px;
+				display: block;
+				cursor: default;
+				width: 100vmin;
+				height: 100vmin;
+				margin-left: auto;
+				margin-right: auto;
 				image-rendering: optimizeSpeed;             /* Older versions of FF          */
 				image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
 				image-rendering: -webkit-optimize-contrast; /* Safari                        */
@@ -17,6 +32,8 @@
 				-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 			}
 		</style>
+	</head>
+	<body>
 		<div id="resources" style="display: none">
 			<img id="image:BLOCK" src="resources/images/BLOCK.png"></img>
 			<img id="image:FLOOR" src="resources/images/FLOOR.png"></img>
@@ -60,11 +77,13 @@
 			<img id="image:SPLASH" src="resources/images/SPLASH.png"></img>
 			<img id="image:BURNT" src="resources/images/BURNT.png"></img>
 
-			<link id="map:test" rel="text" type="text" href="resources/maps/Official Levels/3.txt"></link>
+			<link id="map:test" rel="text" type="text" href="resources/maps/icy.txt"></link>
 			<!--link id="map:icy" rel="text" type="text" href="resources/maps/icy.txt"></link-->
 		</div>
 
-		<canvas id="main-canvas" width="288px" height="288px" style="cursor: default"></canvas>
+		<div id="canvas-container" style="position: relative">
+			<canvas id="main-canvas" width="288px" height="288px"></canvas>
+		</div>
 		
 		<script src="resources/scripts/bundle.js"></script>
 	</body>

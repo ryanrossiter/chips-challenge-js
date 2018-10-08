@@ -6,6 +6,8 @@ import Screen from '~/Screen';
 import Tiles from '~/Tiles';
 import MainLoop from '~/mainloop';
 
+import SortedSet from '~/util/SortedSet';
+
 class Core {
 	constructor() {
 		this.gameState = undefined;
@@ -22,6 +24,7 @@ class Core {
 		this.chipsRemaining = 0;
 		this.playerX = 1;
 		this.playerY = 1;
+		this.sliding = false;
 
 		this.playerXOff = 0;
 		this.playerYOff = 0;
@@ -101,7 +104,7 @@ class Core {
 		return !(x0 > x1 + w1 || x0 + w0 < x1 || y0 > y1 + h1 || y0 + h0 < y1);
 	}
 
-	canMove(x, y) {
+	canMove(x, y, dir) {
 		var tile = this.getTile(x, y);
 
 		if (Tiles.LOCK_TILES.indexOf(tile) !== -1) {
@@ -112,6 +115,13 @@ class Core {
 
 				this.setTile(x, y, Tiles.TILES.FLOOR);
 			} else return false;
+		} else if (Tiles.ICE_TILES.indexOf(tile) !== -1) {
+			if ((tile == Tiles.TILES.ICE_BUMPER_TOP_LEFT && (dir == Defs.DIRS.RIGHT || dir == Defs.DIRS.DOWN))
+				|| (tile == Tiles.TILES.ICE_BUMPER_TOP_RIGHT && (dir == Defs.DIRS.LEFT || dir == Defs.DIRS.DOWN))
+				|| (tile == Tiles.TILES.ICE_BUMPER_BOTTOM_LEFT && (dir == Defs.DIRS.RIGHT || dir == Defs.DIRS.UP))
+				|| (tile == Tiles.TILES.ICE_BUMPER_BOTTOM_RIGHT && (dir == Defs.DIRS.LEFT || dir == Defs.DIRS.UP))) {
+				return false;
+			}
 		}
 
 		return Tiles.SOLID_TILES.indexOf(tile) === -1;
@@ -137,6 +147,9 @@ class Core {
 		} else if (tile == Tiles.TILES.FIRE && !this.hasFireBoots) {
 			this.alive = false;
 			// BURN
+		} else if (tile == Tiles.TILES.ICE && !this.hasFireBoots) {
+			this.sliding = true;
+			// SLIDE
 		} else if (tile == Tiles.TILES.FLIPPERS) {
 			this.hasFlippers = true;
 			this.setTile(x, y, Tiles.TILES.FLOOR);
@@ -165,10 +178,13 @@ class Core {
 	}
 
 	moveMonster(monster) {
-		var goal = [this.playerX, this.playerY];
+		// TODO: A*
+		let goal = [this.playerX, this.playerY];
+		let start = [monster.x, monster.y];
 
-		var paths = [[monster.x, monster.y]];
-		var usedPoints = [[monster.x, monster.y]];
+		let pathSet = new SortedSet();
+		pathSet.insert(0, start);
+		var usedPoints = [start];
 
 		while (true) {
 			var newPaths = [];
@@ -252,7 +268,7 @@ class Core {
 
 		if (this.playerXOff == 0 && this.playerYOff == 0 && this.alive) {
 			var tile = this.getTile(this.playerX, this.playerY);
-			var moved = (Tiles.ICE_TILES.indexOf(tile) !== -1 && !this.hasSkates) || (Tiles.BOOST_TILES.indexOf(tile) !== -1 && !this.hasStickyBoots);
+			var moved = (Tiles.ICE_TILES.indexOf(tile) !== -1 && !this.hasSkates && this.sliding) || (Tiles.BOOST_TILES.indexOf(tile) !== -1 && !this.hasStickyBoots);
 			if (!moved) {
 				if (this.keyboard.isKeyDown("left")) {
 					this.dir = Defs.DIRS.LEFT;
@@ -303,28 +319,28 @@ class Core {
 			if (moved) {
 				switch (this.dir) {
 					case Defs.DIRS.LEFT:
-						if (this.canMove(this.playerX - 1, this.playerY)) {
+						if (this.canMove(this.playerX - 1, this.playerY, this.dir)) {
 							this.move(this.playerX - 1, this.playerY);
 							this.playerXOff = Defs.TILE_SIZE;
 						} else this.sliding = false;
 						break;
 
 					case Defs.DIRS.RIGHT:
-						if (this.canMove(this.playerX + 1, this.playerY)) {
+						if (this.canMove(this.playerX + 1, this.playerY, this.dir)) {
 							this.move(this.playerX + 1, this.playerY);
 							this.playerXOff = -Defs.TILE_SIZE;
 						} else this.sliding = false;
 						break;
 
 					case Defs.DIRS.UP:
-						if (this.canMove(this.playerX, this.playerY - 1)) {
+						if (this.canMove(this.playerX, this.playerY - 1, this.dir)) {
 							this.move(this.playerX, this.playerY - 1);
 							this.playerYOff = Defs.TILE_SIZE;
 						} else this.sliding = false;
 						break;
 
 					case Defs.DIRS.DOWN:
-						if (this.canMove(this.playerX, this.playerY + 1)) {
+						if (this.canMove(this.playerX, this.playerY + 1, this.dir)) {
 							this.move(this.playerX, this.playerY + 1);
 							this.playerYOff = -Defs.TILE_SIZE;
 						} else this.sliding = false;

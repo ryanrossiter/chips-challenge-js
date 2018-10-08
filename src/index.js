@@ -1,6 +1,8 @@
 import Core from '~/Core';
 import Registry from '~/Registry';
 
+import MenuGUIBuilder from '~/gui/MenuGUIBuilder';
+
 window.onload = function() {
 	var canvas = document.getElementById("main-canvas");
 	Registry.loadResources();
@@ -11,6 +13,7 @@ window.onload = function() {
 		if (Registry.loaded) {
 			Core.start();
 			clearInterval(interval);
+			//MenuGUIBuilder.build();
 		}
 	}, 200);
 }
