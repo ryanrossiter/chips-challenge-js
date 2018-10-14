@@ -83,7 +83,7 @@ class Core {
 				y: y,
 				xOff: 0,
 				yOff: 0,
-				dir: Defs.DOWN
+				dir: Defs.DIRS.DOWN
 			});
 			this.setTile(x, y, Tiles.TILES.FLOOR);
 		});
@@ -98,10 +98,6 @@ class Core {
 				if (this.map[y][x] == tileId) callback(x, y);
 			}
 		}
-	}
-
-	intersects(x0, y0, w0, h0, x1, y1, w1, h1) {
-		return !(x0 > x1 + w1 || x0 + w0 < x1 || y0 > y1 + h1 || y0 + h0 < y1);
 	}
 
 	canMove(x, y, dir) {
@@ -178,87 +174,75 @@ class Core {
 	}
 
 	moveMonster(monster) {
-		// TODO: A*
+		console.log(this.monsters[0]);
+		console.log(this.monsters[1]);
+		// A*
+		let hashPos = ([a, b]) => `${a}-${b}`;
+		let getNextPoints = ([a, b, s]) => [
+			[a - 1, b, s + 1],
+			[a + 1, b, s + 1],
+			[a, b - 1, s + 1],
+			[a, b + 1, s + 1]
+		];
+		let dist = ([a0, a1], [b0, b1]) => Math.sqrt(Math.pow(a0 - b0, 2) + Math.pow(a1 - b1, 2));
 		let goal = [this.playerX, this.playerY];
-		let start = [monster.x, monster.y];
+		let start = [monster.x, monster.y, 0];
 
-		let pathSet = new SortedSet();
-		pathSet.insert(0, start);
-		var usedPoints = [start];
+		let nextPoints = new SortedSet();
+		nextPoints.insert(dist(start, goal), start);
+		let usedPoints = [hashPos(start)];
+		let cameFrom = {
+			[hashPos(start)]: start
+		};
 
-		while (true) {
-			var newPaths = [];
+		while (nextPoints.size > 0) {
+			let [score, p] = nextPoints.pop();
+			let hp = hashPos(p);
+			if (hp === hashPos(goal)) break;
 
-			for (var i = 0; i < paths.length; i++) {
-				result = this._calcPath(paths[i], usedPoints, goal);
-				newPaths.concat(result.paths);
-
-				for (var i = 0; i < result.paths.length; i++) {
-					usedPoints = this._addPointsToArray(usedPoints, result.paths[i]);
+			for (let np of getNextPoints(p)) {
+				if (Tiles.MONSTER_TILES.indexOf(this.getTile(np[0], np[1])) === -1) continue;
+				let hnp = hashPos(np);
+				if (usedPoints.indexOf(hnp) === -1) {
+					usedPoints.push(hnp);
+					nextPoints.insert(np[2] + dist(np, goal), np);
+					cameFrom[hnp] = p;
+				} else if (np[2] < cameFrom[hnp][2]) {
+					cameFrom[hnp] = p;
 				}
 			}
-
-			paths = newPaths;
-		}
-	}
-
-	/********
-	*
-	* TODO: Finish pathfinding.
-	*
-	********/
-	// Path: [[x,y], [x,y], ..., [x,y]] of starting point to current point
-	// usedPoints: array of points that have been used by the algorithm, the sum of all paths
-	// goal: the ending point
-	_calcPath(path, usedPoints, goal) {
-		if (path.length === 0) return;
-		var newPaths = [];
-
-		var p = path[path.length - 1]; // The current point;
-		if (Tiles.MONSTER_TILES.indexOf(this.getTile(p[0] - 1, p[1])) !== -1) {
-			var newPath = this._copyArray(path);
-			newPath.push([p[0] - 1, p[1]]);
-			newPaths.push(newPath);
 		}
 
-		if (Tiles.MONSTER_TILES.indexOf(this.getTile(p[0] + 1, p[1])) !== -1) {
-			var newPath = this._copyArray(path);
-			newPath.push([p[0] + 1, p[1]]);
-			newPaths.push(newPath);
+		if (usedPoints.indexOf(hashPos(goal)) !== -1) {
+			let last = goal;
+			let last1 = null;
+			while (hashPos(last) !== hashPos(start)) {
+				last1 = last;
+				last = cameFrom[hashPos(last)];
+			}
+
+			for (let m of this.monsters) {
+				if (m === monster) continue;
+				if (m.x === last1[0] && m.y === last1[1]) return;
+			}
+
+			let dx = Math.sign(monster.x - last1[0]);
+			let dy = Math.sign(monster.y - last1[1]);
+			monster.x = last1[0];
+			monster.y = last1[1];
+			monster.xOff = dx * Defs.TILE_SIZE;
+			monster.yOff = dy * Defs.TILE_SIZE;
 		}
-
-		if (Tiles.MONSTER_TILES.indexOf(this.getTile(p[0], p[1] - 1)) !== -1) {
-			var newPath = this._copyArray(path);
-			newPath.push([p[0], p[1] - 1]);
-			newPaths.push(newPath);
-		}
-
-		if (Tiles.MONSTER_TILES.indexOf(this.getTile(p[0], p[1] + 1)) !== -1) {
-			var newPath = this._copyArray(path);
-			newPath.push([p[0], p[1] + 1]);
-			newPaths.push(newPath);
-		}
-
-		return
-	}
-
-	_copyArray(array) {
-		var newArr = [];
-		for (var i = 0; i < array.length; i++) {
-			newArr[i] = array[i];
-		}
-		return newArr;
-	}
-
-	_addPointsToArray(array, points) {
-		for (var ii = 0; ii < points.length; ii++) {
-			array.push(points[ii]);
-		}
-
-		return array;
 	}
 
 	update() {
+		for (let m of this.monsters) {
+			if (m.xOff > 0) m.xOff -= 2;
+			else if (m.xOff < 0) m.xOff += 2;
+
+			if (m.yOff > 0) m.yOff -= 2;
+			else if (m.yOff < 0) m.yOff += 2;
+		}
 
 		if (this.playerXOff > 0) this.playerXOff -= 2;
 		else if (this.playerXOff < 0) this.playerXOff += 2;
@@ -317,9 +301,11 @@ class Core {
 			}
 
 			if (moved) {
+				moved = false;
 				switch (this.dir) {
 					case Defs.DIRS.LEFT:
 						if (this.canMove(this.playerX - 1, this.playerY, this.dir)) {
+							moved = true;
 							this.move(this.playerX - 1, this.playerY);
 							this.playerXOff = Defs.TILE_SIZE;
 						} else this.sliding = false;
@@ -327,6 +313,7 @@ class Core {
 
 					case Defs.DIRS.RIGHT:
 						if (this.canMove(this.playerX + 1, this.playerY, this.dir)) {
+							moved = true;
 							this.move(this.playerX + 1, this.playerY);
 							this.playerXOff = -Defs.TILE_SIZE;
 						} else this.sliding = false;
@@ -334,6 +321,7 @@ class Core {
 
 					case Defs.DIRS.UP:
 						if (this.canMove(this.playerX, this.playerY - 1, this.dir)) {
+							moved = true;
 							this.move(this.playerX, this.playerY - 1);
 							this.playerYOff = Defs.TILE_SIZE;
 						} else this.sliding = false;
@@ -341,15 +329,17 @@ class Core {
 
 					case Defs.DIRS.DOWN:
 						if (this.canMove(this.playerX, this.playerY + 1, this.dir)) {
+							moved = true;
 							this.move(this.playerX, this.playerY + 1);
 							this.playerYOff = -Defs.TILE_SIZE;
 						} else this.sliding = false;
 						break;
 				}
+			}
 
+			if (moved) {
 				for (var i = 0; i < this.monsters.length; i++) {
-					// TODO: A* or something
-					//this.moveMonster(this.monsters[i]);
+					this.moveMonster(this.monsters[i]);
 				}
 			}
 		}

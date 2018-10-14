@@ -14,6 +14,7 @@ export default class SortedSet {
 	constructor() {
 		this.keys = [];
 		this.map = new Map();
+		this.size = 0;
 	}
 
 	insert(key, item) {
@@ -23,6 +24,8 @@ export default class SortedSet {
 			this.map.set(key, [item]);
 			sortedInsert(this.keys, key);
 		}
+
+		this.size++;
 	}
 
 	pop() {
@@ -34,6 +37,7 @@ export default class SortedSet {
 			this.keys.pop();
 		}
 
-		return v;
+		this.size--;
+		return [k, v];
 	}
 }
