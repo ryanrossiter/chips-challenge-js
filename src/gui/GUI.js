@@ -30,7 +30,8 @@ export default class GUI extends Component {
         }
 
         this.components.push(component);
-        let element = component.init()
+        let element = component.init();
+        component.parent = this;
         this.element.appendChild(element);
     }
 

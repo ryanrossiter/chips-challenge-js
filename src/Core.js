@@ -60,9 +60,9 @@ class Core {
 
 	}
 
-	start() {
+	start(map) {
 		this.gameState = Defs.PLAY_STATE;
-		this.map = Registry.getMap('test');
+		this.map = Registry.getMap(map);
 		this.mapWidth = this.map[0].length;
 		this.mapHeight = this.map.length;
 		this.chipsRemaining = 0;
